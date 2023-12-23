@@ -1,0 +1,33 @@
+<div class="vod-container">
+  <div class="vod-chat">
+    <!--Video player-->
+    <div class="vod-player">
+      <app-load-spinner class="loader" *ngIf="this.loadingVodData"></app-load-spinner>
+      <video
+        #jsPlayer
+        class="video-js"
+        controls
+        playsinline
+        preload="auto"
+        autoplay
+        [ngClass]="{'invisible': loadingVodData}"
+      >
+      </video>
+    </div>
+    <!--Chat-->
+    <div class="chat">
+<!--      HEADER-->
+      <div class="chat-header">
+          <span>Chat</span>
+      </div>
+<!--      CHAT-->
+      <div class="message-list custom-scrollbar" #messageList>
+        <div class="message" *ngFor="let msg of this.viewChat" #messages>
+          <span class="message_autor" [style.color]="msg.commenter.userColor">
+            {{msg.commenter.displayName}}<span class="point">: </span>
+          </span> <span class="message-content" [innerHTML]="msg.messageContent"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

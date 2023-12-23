@@ -1,0 +1,140 @@
+@import "../../../shared/scss/settings";
+
+.vod-container {
+  height: 100%;
+  width: 100%;
+
+  .vod-chat {
+    height: calc(100vh - 45px);
+    display: flex;
+    flex-direction: column;
+    overflow-y: hidden;
+
+    @media (orientation: landscape) and (max-width: $desktop-breakpoint-m) {
+      flex-direction: row;
+    }
+
+    @media (min-width: $desktop-breakpoint-m) {
+      flex-direction: row;
+    }
+
+    .vod-player {
+      width: 100%;
+      height: 100%;
+
+      .loader {
+        display: flex;
+        flex: 1;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        align-content: center;
+        justify-content: center;
+      }
+    }
+
+    .invisible {
+      opacity: 0;
+    }
+
+    .chat {
+      width: 100%;
+      max-height: 60%;
+      min-height: 60%;
+      height: 60%;
+
+      @media (orientation: landscape) and (max-width: $desktop-breakpoint-m) {
+        width: 35%;
+        max-height: 100%;
+        min-height: 100%;
+        height: 100%;
+      }
+
+      @media (min-width: $desktop-breakpoint-m) {
+        width: 24rem;
+        height: 100%;
+        max-height: 100%;
+      }
+
+      display: flex;
+      flex-direction: column;
+      //border-left: 2px solid #4a4a5f;
+
+      font-family: Inter, Roboto, "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+      .chat-header {
+        position: relative;
+        height: 50px;
+        min-height: 50px;
+        border-bottom: 2px solid darken($background-dark-grey, 3%);
+        display: flex;
+        background-color: $background-dark-grey;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 $m-size;
+        font-size: 1.0rem;
+
+        -webkit-box-shadow: 0px 10px 26px 0px rgba(0,0,0,0.4);
+        box-shadow: 0px 10px 26px 0px rgba(0,0,0,0.4);
+
+        @media (min-width: $desktop-breakpoint-m) {
+          font-size: 1.4rem;
+        }
+      }
+
+      .message-list {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+        padding: 0 $xs-size;
+
+        background-color: #18181b;
+
+        .message {
+          margin: 0 0 0.5rem 0;
+          word-break: break-word;
+          overflow-wrap: break-word;
+          font-size: 15px;
+
+          .message_autor {
+            font-weight: bold;
+
+            .point {
+              color: white;
+              font-weight: normal;
+            }
+          }
+
+          .message-content {
+            img {
+              vertical-align: middle;
+              display: inline-block;
+              position: relative;
+              margin: -.5rem 0;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+.user-badge {
+  vertical-align: middle;
+  margin-right: 2px;
+}
+
+:host ::ng-deep .message > .message-content > .emote-image {
+  vertical-align: middle;
+  display: inline-block;
+  position: relative;
+  margin: -.5rem 0;
+}
+
+.emote-image {
+  vertical-align: middle;
+}

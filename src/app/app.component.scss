@@ -1,0 +1,56 @@
+@import "../shared/scss/styles";
+
+.page-container {
+  width: 100%;
+  min-height: 100vh;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  .page-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+header {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid $dark-grey;
+
+  > .header-container {
+    width: 90%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    h1 {
+      font-size: $m-size;
+      margin: 0;
+      z-index: 100;
+
+      @media (min-width: $desktop-breakpoint-s) {
+        font-size: $l-size;
+      }
+
+    }
+
+    span {
+      color: $lirik-blue;
+    }
+  }
+}
+
+main {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
