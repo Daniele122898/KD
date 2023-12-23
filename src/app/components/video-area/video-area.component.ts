@@ -18,6 +18,8 @@ import {Comment} from './models/chat';
 import {LoadSpinnerComponent} from "../load-spinner/load-spinner.component";
 import videojs from 'video.js';
 import Player from 'video.js/dist/types/player'
+import {ChatService} from "./services/chat.service";
+import {FormsModule} from "@angular/forms";
 
 
 @Component({
@@ -29,12 +31,14 @@ import Player from 'video.js/dist/types/player'
     NgIf,
     NgFor,
     NgClass,
-    LoadSpinnerComponent
+    LoadSpinnerComponent,
+    FormsModule
   ]
 })
 export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
 
   public loadingVodData = false;
+  public chatInput: string;
 
   @ViewChild('player') player: any;
 
@@ -52,10 +56,11 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
   private scrollMessageList: any;
 
   constructor(
-    // private chatService: ChatService,
+    private chatService: ChatService,
     private changeDetection: ChangeDetectorRef,
     private router: Router
-  ) { }
+  ) {
+  }
 
   ngOnInit(): void {
   }
@@ -63,7 +68,34 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
   ngAfterViewInit(): void {
     this.scrollMessageList = this.messageList.nativeElement;
     this.messages.changes.subscribe(_ => this.onMessageListChanged());
+    let username = prompt("Enter username");
+    if (username == null || username == "") username = "default";
+    this.chatService.connectClient(username, (name: string, message: string) => {
+      this.onChatMessage(name, message);
+    });
+    this.viewChat.push(this.createSystemMessage("Connected to chat as " + username));
     this.setupJsPlayer()
+  }
+
+  public pressEnterOnChatBox(): void {
+    if (this.chatInput == null || this.chatInput == "") {
+      return;
+    }
+    console.log("Sending message ", this.chatInput);
+    this.chatService.sendMessage(this.chatInput);
+    this.chatInput = "";
+  }
+
+  private onChatMessage(username: string, message: string): void {
+    console.log(`Received message from ${username} with content ${message}`)
+    this.viewChat.push({
+      commenter: {
+        displayName: username,
+        userColor: '#00CAFDFF',
+      },
+      messageContent: message
+    });
+    this.changeDetection.detectChanges();
   }
 
   private setupJsPlayer(): void {
@@ -136,7 +168,6 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
         userColor: '#808080',
       },
       messageContent: message,
-      createdAt: Date.now().toString()
     };
   }
 

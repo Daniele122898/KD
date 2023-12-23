@@ -1,26 +1,35 @@
 import { Injectable } from '@angular/core';
-import {environment} from '../../../environments/environment';
-import {HttpClient, HttpParams} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {ChatReply} from '../models/friendsChat';
+import * as signalR from "@microsoft/signalr"
+
+type CallbackFunc = (username: string, message: string) => void;
 
 @Injectable({
   providedIn: 'root'
 })
 export class ChatService {
 
-  private baseUrl = environment.apiUrl;
+  private username = "default";
+  private con: signalR.HubConnection
 
-  constructor(
-    private http: HttpClient
-  ) {}
+  constructor() { }
 
-  public getChatBatch(vodId: string, startOffset: number, endOffset: number): Observable<ChatReply[]> {
-    const params = new HttpParams()
-      .set('start', startOffset.toString())
-      .set('end', endOffset.toString());
+  public connectClient(username: string, onChatMessage: CallbackFunc): void {
+    this.username = username
+    this.con = new signalR.HubConnectionBuilder()
+      .withUrl("/chatHub")
+      .build();
 
-    return this.http.get<ChatReply[]>(this.baseUrl + 'chat/video/' + vodId, { params });
+    this.con.on("messageReceived", (username: string, message: string) => {
+      onChatMessage(username, message);
+    });
+
+    this.con.start()
+      .then(() => console.log("Chat Hub connection established"))
+      .catch((err: any) => console.log("Error while establishing Chat hub connection ", err))
   }
 
+  public sendMessage(message: string): void {
+    this.con.send("newMessage", this.username, message)
+      .catch((err: any) => console.log("Error sending message ", err));
+  }
 }

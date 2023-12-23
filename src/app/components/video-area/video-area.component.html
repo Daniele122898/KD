@@ -28,6 +28,14 @@
           </span> <span class="message-content" [innerHTML]="msg.messageContent"></span>
         </div>
       </div>
+      <div class="chat-input">
+        <textarea
+          placeholder="message..."
+          [(ngModel)]="chatInput"
+          (keyup.enter)="pressEnterOnChatBox()"
+        ></textarea>
+        <button (click)="pressEnterOnChatBox()">Send</button>
+      </div>
     </div>
   </div>
 </div>
