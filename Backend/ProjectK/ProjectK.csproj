@@ -16,8 +16,4 @@
       <_ContentIncludedByDefault Remove="wwwroot\assets\video-js.min.css" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="wwwroot\" />
-    </ItemGroup>
-
 </Project>

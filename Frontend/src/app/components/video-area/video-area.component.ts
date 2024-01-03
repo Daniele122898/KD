@@ -108,7 +108,7 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
       controls: true,
       sources: [
         {
-          src: "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4",
+          src: "https://cdn.argonautdev.ch/file/bf88315b-9cf4-45b9-9490-2b15517b00e0.mp4",
           type: 'video/mp4',
         }
       ]
