@@ -18,15 +18,14 @@
 
 header {
   width: 100%;
-  height: 44px;
+  height: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid $dark-grey;
 
   > .header-container {
-    height: 44px;
+    height: 30px;
     width: 100%;
     padding-left: $s-size;
     padding-right: $s-size;
@@ -37,12 +36,12 @@ header {
 
     h1 {
       padding-left: $s-size;
-      font-size: $m-size;
+      font-size: $s-size;
       margin: 0;
       z-index: 100;
 
       @media (min-width: $desktop-breakpoint-s) {
-        font-size: $lm-size;
+        font-size: $m-size;
       }
     }
 
