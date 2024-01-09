@@ -24,6 +24,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.MapControllers();
 app.MapHub<ChatHub>("/chatHub");
+app.MapHub<VideoHub>("/videoHub");
 app.UseDefaultFiles();
 app.UseStaticFiles();
 

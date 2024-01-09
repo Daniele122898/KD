@@ -20,6 +20,7 @@ import videojs from 'video.js';
 import Player from 'video.js/dist/types/player'
 import {ChatService} from "./services/chat.service";
 import {FormsModule} from "@angular/forms";
+import {VideoService} from "./services/video.service";
 
 
 @Component({
@@ -54,11 +55,15 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private destroy$  = new Subject();
   private scrollMessageList: any;
+  private syncing = false;
+  private videoUrl = "https://cdn.argonautdev.ch/file/bf88315b-9cf4-45b9-9490-2b15517b00e0.mp4";
+
+  readonly MAX_TOL_S = 1.5;
 
   constructor(
     private chatService: ChatService,
+    private videoService: VideoService,
     private changeDetection: ChangeDetectorRef,
-    private router: Router
   ) {
   }
 
@@ -75,6 +80,22 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
     });
     this.viewChat.push(this.createSystemMessage("Connected to chat as " + username));
     this.setupJsPlayer()
+
+    this.videoService.connectClient((videoTs: number, videoUrl: string, ts: string) => {
+      this.onVideoState(videoTs, videoUrl, ts);
+    });
+
+    // Update cycle
+    interval(1000)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(x => {
+        console.log("Update state");
+        if (this.syncing) return;
+        let currPlayerTime = this.getPlayerTime();
+        let ts = new Date().toISOString();
+        console.log("Update state with", currPlayerTime, this.videoUrl, ts);
+        this.videoService.updateState(currPlayerTime, this.videoUrl, ts);
+      });
   }
 
   public pressEnterOnChatBox(): void {
@@ -84,6 +105,15 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
     console.log("Sending message ", this.chatInput);
     this.chatService.sendMessage(this.chatInput);
     this.chatInput = "";
+  }
+
+  private onVideoState(videoTs: number, videoUrl: string, ts: string)
+  {
+    console.log("On video state", videoTs, videoUrl, ts);
+    // TODO: Properly implement
+    let currTs = this.getPlayerTime();
+    if (Math.abs(currTs - videoTs) <= this.MAX_TOL_S) return;
+    this.playerSeekTo(videoTs);
   }
 
   private onChatMessage(username: string, message: string): void {
@@ -108,7 +138,7 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
       controls: true,
       sources: [
         {
-          src: "https://cdn.argonautdev.ch/file/bf88315b-9cf4-45b9-9490-2b15517b00e0.mp4",
+          src: this.videoUrl,
           type: 'video/mp4',
         }
       ]

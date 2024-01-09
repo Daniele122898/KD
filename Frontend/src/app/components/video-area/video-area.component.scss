@@ -133,6 +133,7 @@
           background-color: $dark-grey;
           border: 2px solid $background-color;
           color: white;
+          resize: none;
 
           &:focus-within {
             border: 2px solid $lirik-blue;

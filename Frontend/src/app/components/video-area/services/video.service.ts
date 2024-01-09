@@ -1,0 +1,40 @@
+import { Injectable } from '@angular/core';
+import * as signalR from "@microsoft/signalr"
+
+type StatusCallback = (videoTs: number, videoUrl: string, ts: string) => void;
+
+@Injectable({
+  providedIn: 'root'
+})
+export class VideoService {
+
+  private con: signalR.HubConnection
+
+  constructor() { }
+
+  public connectClient(onStatusCallback: StatusCallback): void {
+    this.con = new signalR.HubConnectionBuilder()
+      .withUrl("/videoHub")
+      .build();
+
+    this.con.on("currentStatus", (videoTs: number, videoUrl: string, ts: string) => {
+      onStatusCallback(videoTs, videoUrl, ts);
+    });
+
+    this.getCurrentState();
+
+    this.con.start()
+      .then(() => console.log("Video Hub connection established"))
+      .catch((err: any) => console.log("Error while establishing Video hub connection ", err))
+  }
+
+  public getCurrentState(): void {
+    this.con.send("getCurrentState")
+      .catch((err: any) => console.log("Error getting current state ", err));
+  }
+
+  public updateState(videoTs: number, videoUrl: string, ts: string): void {
+    this.con.send("updateState", videoTs, videoUrl, ts)
+      .catch((err: any) => console.log("Error updating state ", err));
+  }
+}
