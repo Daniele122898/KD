@@ -55,7 +55,7 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private destroy$  = new Subject();
   private scrollMessageList: any;
-  private syncing = false;
+  private syncing = true;
   private videoUrl = "https://cdn.argonautdev.ch/file/bf88315b-9cf4-45b9-9490-2b15517b00e0.mp4";
 
   readonly MAX_TOL_S = 1.5;
@@ -79,10 +79,18 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
       this.onChatMessage(name, message);
     });
     this.viewChat.push(this.createSystemMessage("Connected to chat as " + username));
-    this.setupJsPlayer()
 
+    this.setupJsPlayer(() => {
+      this.onPlayerReady();
+    });
+  }
+
+  private onPlayerReady(): void {
+    this.jsPlayer.play();
     this.videoService.connectClient((videoTs: number, videoUrl: string, ts: string) => {
       this.onVideoState(videoTs, videoUrl, ts);
+    }, (videoTs: number, ts: string) => {
+      this.onSeek(videoTs, ts);
     });
 
     // Update cycle
@@ -96,6 +104,7 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
         console.log("Update state with", currPlayerTime, this.videoUrl, ts);
         this.videoService.updateState(currPlayerTime, this.videoUrl, ts);
       });
+
   }
 
   public pressEnterOnChatBox(): void {
@@ -112,7 +121,17 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
     console.log("On video state", videoTs, videoUrl, ts);
     // TODO: Properly implement
     let currTs = this.getPlayerTime();
-    if (Math.abs(currTs - videoTs) <= this.MAX_TOL_S) return;
+    if (Math.abs(currTs - videoTs) <= this.MAX_TOL_S && !this.syncing) return;
+    if (this.syncing) {
+      console.log("Finished initial syncing");
+      this.playerSeekTo(videoTs);
+      this.syncing = false;
+    }
+  }
+
+  private onSeek(videoTs: number, ts: string): void {
+    console.log("On seek", videoTs, ts);
+    // TODO: properly implement
     this.playerSeekTo(videoTs);
   }
 
@@ -128,7 +147,7 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
     this.changeDetection.detectChanges();
   }
 
-  private setupJsPlayer(): void {
+  private setupJsPlayer(onReadyCallback: any): void {
     // use custom videojs player to view m3u8 files
     console.log("Setting up player");
     const options = {
@@ -182,6 +201,7 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
         console.log("Player Ready!");
         this.playerReady = true;
         this.loadingVodData = false;
+        onReadyCallback();
       }
     );
   }

@@ -1,4 +1,5 @@
 using ProjectK.Hubs;
+using ProjectK.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,7 @@ builder.Services.AddRouting(x => x.LowercaseUrls = true);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddSingleton<VideoStateRepository>();
 
 builder.Services.AddSignalR();
 

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import * as signalR from "@microsoft/signalr"
 
 type StatusCallback = (videoTs: number, videoUrl: string, ts: string) => void;
+type SeekCallback = (videoTs: number, ts: string) => void;
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +13,7 @@ export class VideoService {
 
   constructor() { }
 
-  public connectClient(onStatusCallback: StatusCallback): void {
+  public connectClient(onStatusCallback: StatusCallback, onSeekCallback: SeekCallback): void {
     this.con = new signalR.HubConnectionBuilder()
       .withUrl("/videoHub")
       .build();
@@ -21,10 +22,16 @@ export class VideoService {
       onStatusCallback(videoTs, videoUrl, ts);
     });
 
-    this.getCurrentState();
+    this.con.on("seek", (videoTs: number, ts: string) => {
+      onSeekCallback(videoTs, ts);
+    });
+
 
     this.con.start()
-      .then(() => console.log("Video Hub connection established"))
+      .then(() => {
+        console.log("Video Hub connection established");
+        this.getCurrentState();
+      })
       .catch((err: any) => console.log("Error while establishing Video hub connection ", err))
   }
 
@@ -36,5 +43,10 @@ export class VideoService {
   public updateState(videoTs: number, videoUrl: string, ts: string): void {
     this.con.send("updateState", videoTs, videoUrl, ts)
       .catch((err: any) => console.log("Error updating state ", err));
+  }
+
+  public seekTo(videoTs: number, ts: string): void {
+    this.con.send("seekTo", videoTs, ts)
+      .catch((err: any) => console.log("Error sending seek to", err));
   }
 }
