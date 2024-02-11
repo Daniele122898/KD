@@ -86,22 +86,26 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private onPlayerReady(): void {
     this.jsPlayer.play();
-    this.videoService.connectClient((videoTs: number, videoUrl: string, ts: string) => {
-      this.onVideoState(videoTs, videoUrl, ts);
+    this.videoService.connectClient((videoTs: number, videoUrl: string, isPlaying: boolean, ts: string) => {
+      this.onGetVideoState(videoTs, videoUrl, isPlaying, ts);
+    }, (videoTs: number, videoUrl: string, isPlaying: boolean, ts: string) => {
+      this.onVideoState(videoTs, videoUrl, isPlaying, ts);
     }, (videoTs: number, ts: string) => {
       this.onSeek(videoTs, ts);
+    }, (isPlaying: boolean, ts: string) => {
+      this.onPlayStateUpdate(isPlaying, ts);
     });
 
     // Update cycle
     interval(1000)
       .pipe(takeUntil(this.destroy$))
       .subscribe(x => {
-        console.log("Update state");
         if (this.syncing) return;
-        let currPlayerTime = this.getPlayerTime();
-        let ts = new Date().toISOString();
-        console.log("Update state with", currPlayerTime, this.videoUrl, ts);
-        this.videoService.updateState(currPlayerTime, this.videoUrl, ts);
+        const currPlayerTime = this.getPlayerTime();
+        const ts = new Date().toISOString();
+        const isPlaying = this.isPlayerPlaying();
+        console.log("Update state with", currPlayerTime, this.videoUrl, isPlaying, ts);
+        this.videoService.updateState(currPlayerTime, this.videoUrl, isPlaying, ts);
       });
 
   }
@@ -115,17 +119,28 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
     this.chatInput = "";
   }
 
-  private onVideoState(videoTs: number, videoUrl: string, ts: string)
+  private onGetVideoState(videoTs: number, videoUrl: string, isPlaying: boolean, ts: string): void {
+    console.log("On get initial video state", videoTs, videoUrl, isPlaying, ts);
+    // TODO: Fix this mess
+    if (!this.playerReady) {
+      setTimeout(() => {
+        this.onGetVideoState(videoTs, videoUrl, isPlaying, ts);
+      }, 200);
+    }
+    this.playerSeekTo(videoTs);
+    if (isPlaying) {
+      this.playerPlay();
+    } else {
+      this.playerPause();
+    }
+  }
+
+  private onVideoState(videoTs: number, videoUrl: string, isPlaying: boolean, ts: string)
   {
-    console.log("On video state", videoTs, videoUrl, ts);
+    console.log("On video state", videoTs, videoUrl, isPlaying, ts);
     // TODO: Properly implement
     let currTs = this.getPlayerTime();
-    if (Math.abs(currTs - videoTs) <= this.MAX_TOL_S && !this.syncing) return;
-    if (this.syncing) {
-      console.log("Finished initial syncing");
-      this.playerSeekTo(videoTs);
-      this.syncing = false;
-    }
+    if (Math.abs(currTs - videoTs) <= this.MAX_TOL_S) return;
   }
 
   private onSeek(videoTs: number, ts: string): void {
@@ -210,6 +225,12 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
       console.log("Seeking event, sending", curr);
       this.videoService.seekTo(curr, new Date().toISOString());
     });
+    this.jsPlayer.on('pause', () => {
+      this.videoService.updatePlayState(false, new Date().toISOString());
+    });
+    this.jsPlayer.on('play', () => {
+      this.videoService.updatePlayState(true, new Date().toISOString());
+    });
   }
 
   private clearChat(): void {
@@ -235,8 +256,16 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
     this.jsPlayer.currentTime(seconds);
   }
 
-  private isPlayerPaused(): boolean {
-    return this.jsPlayer.paused();
+  private playerPlay(): void {
+    this.jsPlayer.play();
+  }
+
+  private playerPause(): void {
+    this.jsPlayer.pause();
+  }
+
+  private isPlayerPlaying(): boolean {
+    return !this.jsPlayer.paused();
   }
 
   ngOnDestroy(): void {
@@ -255,4 +284,11 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
+  private onPlayStateUpdate(isPlaying: boolean, ts: string) {
+    if (isPlaying) {
+      this.playerPlay();
+    } else {
+      this.playerPause();
+    }
+  }
 }
