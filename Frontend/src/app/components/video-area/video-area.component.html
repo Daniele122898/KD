@@ -1,18 +1,23 @@
 <div class="vod-container">
   <div class="vod-chat">
     <!--Video player-->
-    <div class="vod-player">
-      <app-load-spinner class="loader" *ngIf="this.loadingVodData"></app-load-spinner>
-      <video
-        #jsPlayer
-        class="video-js"
-        controls
-        playsinline
-        preload="auto"
-        autoplay
-        [ngClass]="{'invisible': loadingVodData}"
-      >
-      </video>
+    <div class="video-container custom-scrollbar">
+      <div class="vod-player">
+        <app-load-spinner class="loader" *ngIf="this.loadingVodData"></app-load-spinner>
+        <video
+          #jsPlayer
+          class="video-js"
+          controls
+          playsinline
+          preload="auto"
+          autoplay
+          [ngClass]="{'invisible': loadingVodData}"
+        >
+        </video>
+      </div>
+      <div class="video-controls">
+          <p>Made with <span>♥</span></p>
+      </div>
     </div>
     <!--Chat-->
     <div class="chat">

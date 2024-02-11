@@ -11,7 +11,6 @@ import {
   ViewChildren
 } from '@angular/core';
 import { NgClass, NgFor, NgIf } from "@angular/common";
-import {ActivatedRoute, Router} from '@angular/router';
 import {interval, Subject} from 'rxjs';
 import {takeUntil} from 'rxjs/operators';
 import {Comment} from './models/chat';
@@ -132,6 +131,8 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
   private onSeek(videoTs: number, ts: string): void {
     console.log("On seek", videoTs, ts);
     // TODO: properly implement
+    const curr = this.getPlayerTime();
+    if (Math.abs(curr - videoTs) <= this.MAX_TOL_S) return;
     this.playerSeekTo(videoTs);
   }
 
@@ -204,6 +205,11 @@ export class VideoAreaComponent implements OnInit, OnDestroy, AfterViewInit {
         onReadyCallback();
       }
     );
+    this.jsPlayer.on('seeking', () => {
+      const curr = this.getPlayerTime();
+      console.log("Seeking event, sending", curr);
+      this.videoService.seekTo(curr, new Date().toISOString());
+    });
   }
 
   private clearChat(): void {
